@@ -1,0 +1,77 @@
+import pygame
+from pygame.locals import *
+import random
+import math
+
+# Инициализация Pygame
+pygame.init()
+
+# Определение цветов
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+
+# Размеры экрана
+WIDTH = 800
+HEIGHT = 600
+
+# Создание окна
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+# Создание списка звезд
+stars = []
+for i in range(100):
+    x = random.randint(-100, 100)
+    y = random.randint(-100, 100)
+    z = random.randint(1, 100)
+    stars.append((x, y, z))
+
+# Начальная координата наблюдателя
+camera_z = -500
+
+# Основной цикл программы
+clock = pygame.time.Clock()
+while True:
+    # Обработка событий
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
+    # Получение ввода от клавиатуры
+    keys = pygame.key.get_pressed()
+    if keys[K_UP]:
+        camera_z += 10
+    if keys[K_DOWN]:
+        camera_z -= 10
+
+    # Получение ввода от мыши
+    x, y = pygame.mouse.get_rel()
+    for i in range(len(stars)):
+        # Перемещение звезд с эффектом параллакса
+        stars[i] = (stars[i][0] - x * (stars[i][2] / camera_z), stars[i][1] - y * (stars[i][2] / camera_z), stars[i][2])
+
+    # Очистка экрана
+    screen.fill(BLACK)
+
+    # Отрисовка звезд
+    for star in stars:
+        # Рассчет размера звезды в зависимости от расстояния
+        size = max(0, int(100 / (star[2] + 1)))
+        # Рассчет координат для отображения в 3D
+        x = star[0] * (WIDTH / 4) / (star[2] + camera_z) + WIDTH / 2
+        y = star[1] * (HEIGHT / 4) / (star[2] + camera_z) + HEIGHT / 2
+        # Определение цвета звезды в зависимости от расстояния
+        if star[2] < camera_z:
+            color = YELLOW
+        else:
+            color = WHITE
+        # Отрисовка звезды
+        pygame.draw.circle(screen, color, (x, y), size)
+    
+    # Обновление экрана
+    pygame.display.update()
+    
+    # Ограничение частоты обновления экрана
+    clock.tick(60)
